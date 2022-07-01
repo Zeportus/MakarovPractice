@@ -16,11 +16,18 @@ class UserReg(BaseModel):
   password: str
   lvl: int
 
+
 class PostReg(BaseModel):
     name: str
     lead_author: int
     lvl: int
     authors: List[int] # Тут будут id помощников
+    content: str
+
+
+class CommReg(BaseModel):
+    user_id: int
+    post_id: int
     content: str
 
 
@@ -39,8 +46,25 @@ def Registration(userreg: UserReg):
     return 'Username already exists'
 
 
+@app.post('/authorization')
+def Authorization(username: str, password: str):
+    if logic.CheckLogin(username, password):
+        return 'Authorization successful'
+    return 'Authorization failed'
+        
+
+@app.post('/logout')
+def LogOut(id: int):
+    if logic.LogOut(id):
+        return 'Logout successful'
+    return 'Logout failed'
+
+
 @app.post('/createpost')
 def CreatePost(postreg: PostReg):
+    if not logic.CheckActive(postreg.lead_author):
+        return 'You are not authorized'
+
     for i in postreg.authors:
         if not logic.CheckCreateRights(i):
             return 'Check your authors lvls. One or more of them is low'
@@ -62,7 +86,15 @@ def CreatePost(postreg: PostReg):
     return 'Post has not been created. Your lvl is low'
 
 
-@app.get('/post/content/{id}')
-def ShowPost(id: int):
-    logic.ShowContent(id)
-    return 'Content has been opened'
+@app.get('/post/content/{post_id}')
+def ShowPost(post_id: int, user_id: int):
+    if logic.CheckActive(user_id):
+        if logic.ShowContent(post_id, user_id):
+            return 'Content has been opened'
+        return 'This post does not exist'
+    return 'You are not authorized'
+
+
+@app.post('/add_comment')
+def AddComment(commreg: CommReg):
+    pass

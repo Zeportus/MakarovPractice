@@ -1,3 +1,4 @@
+from email.policy import default
 from sqlalchemy import MetaData, Table, String, Integer, Column, Text, DateTime, Boolean, create_engine, ForeignKey, insert, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -14,7 +15,8 @@ class User(Base):
     username = Column(String(20), nullable=False)
     password = Column(String(90),  nullable=False)
     lvl = Column(Integer(), nullable=False)
-
+    active = Column(Boolean(), default=False) # Залогинин или нет
+    
 class Author(Base):
     __tablename__ = 'authors'
     
@@ -31,7 +33,8 @@ class Comment(Base):
     id = Column(Integer(), primary_key=True)
     post_id = Column(ForeignKey('posts.id'))
     user_id = Column(ForeignKey('users.id'))
-    
+    user = relationship('User')
+    post = relationship('Post')
 
 class Post(Base):
     __tablename__ = 'posts'
@@ -40,6 +43,8 @@ class Post(Base):
     name = Column(String(100), nullable=False)
     lead_author = Column(ForeignKey('users.id'))
     lvl = Column(Integer(), nullable=False)
+    comm_count = Column(Integer(), default = 0)
     user = relationship('User')
+    
 
 Base.metadata.create_all(engine)

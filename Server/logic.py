@@ -31,12 +31,48 @@ def CheckCreateRights(id): # Проверка уровня доступа пол
     return False
 
 
-def SaveContent(str, id):
+def CheckActive(id): # Тут проверяется вошел ли данный пользователь в аккаунт
+    if s.query(User.active).filter(User.id == id).one()[0]:
+        return True
+    return False
+
+def SaveContent(str, id): # Сохранение содержимого контента в виде html файла
     os.mkdir(f'Posts/{id}')
     file = open(f'Posts/{id}/{id}.html', 'x')
     file.write(str)
     file.close()
+
+
+def AddComment(post_id, comm_id):
+    file = open(f'Posts/{post_id}/comm_{comm_id}.html', 'x')
+    file.write(str)
+    file.close()
     
-def ShowContent(id):
-    url = f'Posts/{id}/{id}.html'
-    webbrowser.open(url, new=2)
+
+def ShowContent(post_id, user_id):
+    post = s.query(Post).filter(Post.id == post_id).one()
+    authors_id = s.query(Author.user_id).filter(Author.post_id == post_id).all()[0]
+    if post.lvl == 2 or post.lead_author == user_id or user_id in authors_id:
+        url = f'Posts/{post_id}/{post_id}.html'
+        webbrowser.open(url, new=2)
+        return True
+    return False
+
+
+def CheckLogin(username, password):
+    try: 
+        user = s.query(User).filter(User.username == username, User.password == password).one()
+        user.active = True
+        s.add(user)
+        s.commit()
+        return True
+    except:
+        return False
+
+
+def LogOut(id):
+    user = s.query(User).filter(User.id == id).one()
+    user.active = False
+    s.add(user)
+    s.commit()
+    return True
