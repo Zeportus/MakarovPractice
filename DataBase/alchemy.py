@@ -1,36 +1,45 @@
 from sqlalchemy import MetaData, Table, String, Integer, Column, Text, DateTime, Boolean, create_engine, ForeignKey, insert, select
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
 
 engine = create_engine("postgresql+psycopg2://mark:1234@localhost/practice")
-conn = engine.connect()
+session = sessionmaker(bind=engine)
+s = session()
 
-print(engine)
+Base = declarative_base()
+class User(Base):
+    __tablename__ = 'users'
 
-metadata = MetaData(engine)
+    id = Column(Integer(), primary_key=True)
+    username = Column(String(20), nullable=False)
+    password = Column(String(90),  nullable=False)
+    lvl = Column(Integer(), nullable=False)
 
-users = Table('users', metadata, 
-    Column('id', Integer(), primary_key=True),
-    Column('username', String(20), nullable=False),
-    Column('password', String(90),  nullable=False),
-    Column('lvl', Integer(), nullable=False),
-    Column('posts', ForeignKey('posts.id')) #подразумевается только авторство, помощники отдельная таблица.
-)
+class Author(Base):
+    __tablename__ = 'authors'
+    
+    id = Column(Integer(), primary_key=True)
+    user_id = Column(ForeignKey('users.id'))
+    post_id = Column(ForeignKey('posts.id'))
+    user = relationship('User')
+    post = relationship('Post')
 
-helpers = Table('helpers', metadata, 
-    Column('id', ForeignKey('users.id')),
-    Column('posts', ForeignKey('posts.id')) 
-)
 
-posts = Table('posts', metadata, 
-    Column('id', Integer(), primary_key=True),
-    Column('name', String(100), nullable=False),
-    Column('author', ForeignKey('users.id')),
-    Column('lvl', Integer(), nullable=False),
-)
+class Comment(Base):
+    __tablename__ = 'comments'
 
-insUsers = insert(users)
-selUsers = select([users])
-insHelpers = insert(helpers)
-selHelpers = select([helpers])
-insPosts = insert(posts)
-selPosts = select([posts])
-metadata.create_all()
+    id = Column(Integer(), primary_key=True)
+    post_id = Column(ForeignKey('posts.id'))
+    user_id = Column(ForeignKey('users.id'))
+    
+
+class Post(Base):
+    __tablename__ = 'posts'
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(100), nullable=False)
+    lead_author = Column(ForeignKey('users.id'))
+    lvl = Column(Integer(), nullable=False)
+    user = relationship('User')
+
+Base.metadata.create_all(engine)

@@ -1,10 +1,10 @@
 import sys
 import os
+import webbrowser
 sys.path.insert(0, '/home/mark/Practice/DataBase')
-import alchemy
+from alchemy import s, User, Post, Author
 
-
-
+    
 userlvl = {
     0: 'user',
     1: 'writer',
@@ -19,29 +19,16 @@ postlvl = {
     3: 'denied'
 }
 
+
 def CheckReg(username): # Проверка на оригинальность никнейма.
-    s = alchemy.selUsers.where(
-        alchemy.users.c.username == username
-    )
-    r = alchemy.conn.execute(s)
-
-    if not r.fetchall():
-        return True
-    else: 
+    if s.query(User.username).filter(User.username == username).all():
         return False
-
+    return True
 
 def CheckCreateRights(id): # Проверка уровня доступа пользователя
-    s = alchemy.selUsers.where(
-        (alchemy.users.c.id == id) &
-        (alchemy.users.c.lvl > 0)
-    )
-    r = alchemy.conn.execute(s)
-
-    if r.fetchall():
+    if s.query(User.lvl).filter(User.id == id).one()[0] > 0:
         return True
-    else: 
-        return False
+    return False
 
 
 def SaveContent(str, id):
@@ -50,3 +37,6 @@ def SaveContent(str, id):
     file.write(str)
     file.close()
     
+def ShowContent(id):
+    url = f'Posts/{id}/{id}.html'
+    webbrowser.open(url, new=2)
