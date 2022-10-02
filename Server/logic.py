@@ -52,7 +52,7 @@ def CheckActive(id): # Тут проверяется вошел ли данны�
 
 
 def AddComment(commreg): # Добавление комментария
-    if dbFace.getPost(commreg.post_id).lvl == 2:
+    if dbFace.getPost(commreg.post_id).lvl == 2 and 0 in dbFace.getLvls(commreg.user_id):
         dbFace.addComment(commreg)
         return True
     return False
