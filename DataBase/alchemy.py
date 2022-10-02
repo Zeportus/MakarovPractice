@@ -14,7 +14,6 @@ class User(Base):
     id = Column(Integer(), primary_key=True)
     username = Column(String(20), nullable=False)
     password = Column(String(90),  nullable=False)
-    lvl = Column(Integer(), nullable=False)
     active = Column(Boolean(), default=False) # Залогинин или нет
     
 class Author(Base):
@@ -31,6 +30,7 @@ class Comment(Base):
     __tablename__ = 'comments'
 
     id = Column(Integer(), primary_key=True)
+    content = Column(String(1000), nullable=False)
     post_id = Column(ForeignKey('posts.id'))
     user_id = Column(ForeignKey('users.id'))
     user = relationship('User')
@@ -43,8 +43,22 @@ class Post(Base):
     name = Column(String(100), nullable=False)
     lead_author = Column(ForeignKey('users.id'))
     lvl = Column(Integer(), nullable=False)
+    content = Column(String(10000), nullable=False)
     comm_count = Column(Integer(), default = 0)
     user = relationship('User')
     
 
+class Lvl(Base):
+    __tablename__ = 'lvls'
+
+    id = Column(Integer(), primary_key=True)
+    user_id = Column(ForeignKey('users.id'))
+    lvl = Column(Integer(), nullable=False)
+    user = relationship('User')
+
+
 Base.metadata.create_all(engine)
+
+
+
+
